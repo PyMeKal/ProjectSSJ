@@ -1,0 +1,16 @@
+{
+  "name": "project-ssj",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "dev": "concurrently -n server,client -c cyan,green \"npm run dev --workspace @project-ssj/server\" \"npm run dev --workspace @project-ssj/client\"",
+    "import": "npm run import --workspace @project-ssj/server -- ./data/kakao-chat.txt"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

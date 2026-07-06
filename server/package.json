@@ -1,0 +1,17 @@
+{
+  "name": "@project-ssj/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js",
+    "import": "node src/jobs/importChatFile.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^9.3.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.1",
+    "express": "^4.18.2"
+  }
+}
