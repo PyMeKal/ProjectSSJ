@@ -2,12 +2,15 @@ node_modules/
 dist/
 .vite/
 .env
+server/.env
 .DS_Store
 design/
 
 # KakaoTalk raw exports and local database files
 server/data/*
 !server/data/.gitkeep
+server/inputs/*
+!server/inputs/sample-kakao-chat.txt
 server/*.sqlite
 server/*.db
 *.sqlite

@@ -1,7 +1,7 @@
 import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
-import { openDatabase } from "./db/database.js";
+import db from "./models/index.js";
 import { createStatsRouter } from "./routes/statsRoutes.js";
 
 dotenv.config();
@@ -9,7 +9,6 @@ dotenv.config();
 const app = express();
 const port = Number(process.env.PORT ?? 4000);
 const clientOrigin = process.env.CLIENT_ORIGIN ?? "http://localhost:5173";
-const db = openDatabase();
 
 app.use(
   cors({
@@ -24,6 +23,18 @@ app.get("/api/health", (req, res) => {
 
 app.use("/api/stats", createStatsRouter(db));
 
-app.listen(port, () => {
-  console.log(`ProjectSSJ API listening on http://localhost:${port}`);
+app.use((error, req, res, next) => {
+  console.error(error);
+  res.status(500).json({ error: "서버에서 오류가 발생했습니다." });
 });
+
+try {
+  await db.sequelize.authenticate();
+
+  app.listen(port, () => {
+    console.log(`ProjectSSJ API listening on http://localhost:${port}`);
+  });
+} catch (error) {
+  console.error("MySQL 연결에 실패했습니다.", error);
+  process.exit(1);
+}

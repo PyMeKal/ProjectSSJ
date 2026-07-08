@@ -18,75 +18,87 @@ const STOP_WORDS = new Set([
 ]);
 
 export function getSummary(db) {
-  const row = db
-    .prepare(
+  return db.sequelize
+    .query(
       `
         select
           count(*) as totalMessages,
           count(distinct sender) as participantCount,
           min(sent_date) as firstDate,
           max(sent_date) as lastDate
-        from messages
+        from texts
       `,
+      { type: db.Sequelize.QueryTypes.SELECT },
     )
-    .get();
-
-  return {
-    totalMessages: row.totalMessages ?? 0,
-    participantCount: row.participantCount ?? 0,
-    firstDate: row.firstDate,
-    lastDate: row.lastDate,
-  };
+    .then(([row]) => ({
+      totalMessages: Number(row.totalMessages ?? 0),
+      participantCount: Number(row.participantCount ?? 0),
+      firstDate: row.firstDate,
+      lastDate: row.lastDate,
+    }));
 }
 
-export function getUserRanking(db, limit = 20) {
-  return db
-    .prepare(
-      `
-        select sender, count(*) as count
-        from messages
-        group by sender
-        order by count desc, sender asc
-        limit ?
-      `,
-    )
-    .all(limit);
+export async function getUserRanking(db, limit = 20) {
+  const rows = await db.Text.findAll({
+    attributes: [
+      "sender",
+      [db.Sequelize.fn("COUNT", db.Sequelize.col("id")), "count"],
+    ],
+    group: ["sender"],
+    order: [
+      [db.Sequelize.literal("count"), "DESC"],
+      ["sender", "ASC"],
+    ],
+    limit,
+    raw: true,
+  });
+
+  return rows.map((row) => ({
+    sender: row.sender,
+    count: Number(row.count),
+  }));
 }
 
-export function getDailyStats(db) {
-  return db
-    .prepare(
-      `
-        select sent_date as date, count(*) as count
-        from messages
-        group by sent_date
-        order by sent_date asc
-      `,
-    )
-    .all();
+export async function getDailyStats(db) {
+  const rows = await db.Text.findAll({
+    attributes: [
+      [db.Sequelize.col("sent_date"), "date"],
+      [db.Sequelize.fn("COUNT", db.Sequelize.col("id")), "count"],
+    ],
+    group: [db.Sequelize.col("sent_date")],
+    order: [[db.Sequelize.col("sent_date"), "ASC"]],
+    raw: true,
+  });
+
+  return rows.map((row) => ({
+    date: row.date,
+    count: Number(row.count),
+  }));
 }
 
-export function getHourlyStats(db) {
-  const rows = db
-    .prepare(
-      `
-        select sent_hour as hour, count(*) as count
-        from messages
-        group by sent_hour
-      `,
-    )
-    .all();
+export async function getHourlyStats(db) {
+  const rows = await db.Text.findAll({
+    attributes: [
+      [db.Sequelize.col("sent_hour"), "hour"],
+      [db.Sequelize.fn("COUNT", db.Sequelize.col("id")), "count"],
+    ],
+    group: [db.Sequelize.col("sent_hour")],
+    raw: true,
+  });
 
   const countByHour = new Map(rows.map((row) => [row.hour, row.count]));
 
   return Array.from({ length: 24 }, (_, hour) => ({
     hour,
-    count: countByHour.get(hour) ?? 0,
+    count: Number(countByHour.get(hour) ?? 0),
   }));
 }
 
-export function getTopWords(db, limit = 30) {
-  const rows = db.prepare("select message from messages").all();
+export async function getTopWords(db, limit = 30) {
+  const rows = await db.Text.findAll({
+    attributes: ["message"],
+    raw: true,
+  });
   const wordCounts = new Map();
 
   for (const row of rows) {

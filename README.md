@@ -35,7 +35,7 @@ npm run import
 예제 데이터로 먼저 확인하려면 아래 명령을 사용할 수 있습니다.
 
 ```bash
-npm run import --workspace @project-ssj/server -- ./examples/sample-kakao-chat.txt
+npm run import --workspace @project-ssj/server -- ./inputs/sample-kakao-chat.txt
 ```
 
 4. 개발 서버를 실행합니다.
