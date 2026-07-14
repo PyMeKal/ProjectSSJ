@@ -21,9 +21,29 @@ export function parseKakaoText(text) {
   }
 
   // The library also returns system messages. We only import real user messages into Text.
-  return chatRoom.messages
-    .filter((message) => message.type !== "system" && message.sender)
+  const userMessages = chatRoom.messages.filter((message) => message.type !== "system" && message.sender);
+
+  return mergeBackdatedMessages(userMessages)
     .map(toImportRow);
+}
+
+function mergeBackdatedMessages(messages) {
+  const merged = [];
+
+  for (const message of messages) {
+    const previous = merged.at(-1);
+
+    if (previous && message.timestamp < previous.timestamp) {
+      // If a later line has an older timestamp, treat it as pasted old chat text.
+      // Keep the previous message's current timestamp and append the old-looking line to its content.
+      previous.content = `${previous.content}\n${formatOriginalMessageLine(message)}`;
+      continue;
+    }
+
+    merged.push({ ...message });
+  }
+
+  return merged;
 }
 
 function toImportRow(message) {
@@ -44,6 +64,13 @@ function toImportRow(message) {
     sender: message.sender.trim(),
     message: message.content.trim(),
   };
+}
+
+function formatOriginalMessageLine(message) {
+  const { year, month, day, hour, minute } = getKstParts(message.timestamp);
+
+  return `${year}-${month}-${day} ${hour}:${minute}, ` +
+    `${message.sender.trim()} : ${message.content.trim()}`;
 }
 
 function getKstParts(date) {

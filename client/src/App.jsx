@@ -4,23 +4,28 @@ import { AnalysisHub } from "./pages/AnalysisHub.jsx";
 import { KeywordAnalysisPage } from "./pages/KeywordAnalysisPage.jsx";
 import { MainPage } from "./pages/MainPage.jsx";
 import { TimeAnalysisPage } from "./pages/TimeAnalysisPage.jsx";
-import { routes } from "./routes.js";
+import { defaultRoutes } from "./routes.js";
+import { getAppRoutes } from "./services/api.js";
 import "./styles.css";
 
-function getCurrentRoute() {
+function getCurrentRoute(routes) {
   const path = window.location.pathname;
   if (Object.values(routes).includes(path)) return path;
   return routes.main;
 }
 
-function useRoute() {
-  const [route, setRoute] = useState(getCurrentRoute);
+function useRoute(routes) {
+  const [route, setRoute] = useState(() => getCurrentRoute(routes));
 
   useEffect(() => {
-    const handlePopState = () => setRoute(getCurrentRoute());
+    const handlePopState = () => setRoute(getCurrentRoute(routes));
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
-  }, []);
+  }, [routes]);
+
+  useEffect(() => {
+    setRoute(getCurrentRoute(routes));
+  }, [routes]);
 
   const navigate = (nextRoute) => {
     window.history.pushState({}, "", nextRoute);
@@ -30,7 +35,7 @@ function useRoute() {
   return [route, navigate];
 }
 
-function Shell({ route, navigate, children }) {
+function Shell({ route, routes, navigate, children }) {
   return (
     <main className="app-shell">
       <header className="site-header">
@@ -59,17 +64,34 @@ function Shell({ route, navigate, children }) {
 }
 
 export default function App() {
-  const [route, navigate] = useRoute();
+  const [routes, setRoutes] = useState(defaultRoutes);
+  const [route, navigate] = useRoute(routes);
+
+  useEffect(() => {
+    let ignore = false;
+
+    getAppRoutes()
+      .then((serverRoutes) => {
+        if (!ignore) setRoutes({ ...defaultRoutes, ...serverRoutes });
+      })
+      .catch(() => {
+        if (!ignore) setRoutes(defaultRoutes);
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   const page = useMemo(() => {
-    if (route === routes.analysis) return <AnalysisHub navigate={navigate} />;
-    if (route === routes.time) return <TimeAnalysisPage navigate={navigate} />;
-    if (route === routes.keyword) return <KeywordAnalysisPage navigate={navigate} />;
-    return <MainPage navigate={navigate} />;
-  }, [route, navigate]);
+    if (route === routes.analysis) return <AnalysisHub routes={routes} navigate={navigate} />;
+    if (route === routes.time) return <TimeAnalysisPage routes={routes} navigate={navigate} />;
+    if (route === routes.keyword) return <KeywordAnalysisPage routes={routes} navigate={navigate} />;
+    return <MainPage routes={routes} navigate={navigate} />;
+  }, [route, routes, navigate]);
 
   return (
-    <Shell route={route} navigate={navigate}>
+    <Shell route={route} routes={routes} navigate={navigate}>
       {page}
     </Shell>
   );

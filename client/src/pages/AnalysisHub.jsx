@@ -1,9 +1,8 @@
 import { ArrowRight, BarChart3, Clock3, Hash } from "lucide-react";
 import { PageIntro } from "../components/PageIntro.jsx";
 import { StatCard } from "../components/StatCard.jsx";
-import { routes } from "../routes.js";
 
-export function AnalysisHub({ navigate }) {
+export function AnalysisHub({ routes, navigate }) {
   return (
     <section className="page-stack">
       <PageIntro

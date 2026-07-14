@@ -1,51 +1,36 @@
 import { Router } from "express";
-import {
-  getDailyStats,
-  getHourlyStats,
-  getSummary,
-  getTopWords,
-  getUserRanking,
-} from "../services/statsService.js";
+import { getKeywordParticipation } from "../services/stats/keywordAnalysisService.js";
+import { getTimeParticipation } from "../services/stats/timeAnalysisService.js";
 
 export function createStatsRouter(db) {
   const router = Router();
 
-  router.get("/", async (req, res, next) => {
+  // Time analysis: sender participation ratio for a day, month, year, or all messages.
+  router.get("/time", async (req, res, next) => {
     try {
-      const [summary, userRanking, dailyStats, hourlyStats, topWords] = await Promise.all([
-        getSummary(db),
-        getUserRanking(db),
-        getDailyStats(db),
-        getHourlyStats(db),
-        getTopWords(db),
-      ]);
-
-      res.json({
-        summary,
-        userRanking,
-        dailyStats,
-        hourlyStats,
-        topWords,
-      });
+      res.json(await getTimeParticipation(db, req.query));
     } catch (error) {
       next(error);
     }
   });
 
-  router.get("/summary", async (req, res, next) => {
+  // Keyword analysis: sender ratio among messages that contain the requested keyword.
+  router.get("/keyword", async (req, res, next) => {
     try {
-      res.json(await getSummary(db));
+      res.json(await getKeywordParticipation(db, req.query));
     } catch (error) {
       next(error);
     }
   });
 
-  router.get("/ranking", async (req, res, next) => {
-    try {
-      res.json(await getUserRanking(db));
-    } catch (error) {
-      next(error);
-    }
+  // A small index response makes it clear which analysis endpoints exist.
+  router.get("/", (req, res) => {
+    res.json({
+      endpoints: {
+        time: "/api/stats/time?scope=day&date=YYYY-MM-DD",
+        keyword: "/api/stats/keyword?keyword=검색어",
+      },
+    });
   });
 
   return router;

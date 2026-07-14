@@ -1,8 +1,7 @@
 import { ArrowRight } from "lucide-react";
 import { chatRoom } from "../data/chatReport.js";
-import { routes } from "../routes.js";
 
-export function MainPage({ navigate }) {
+export function MainPage({ routes, navigate }) {
   return (
     <section className="hero-section">
       <div className="hero-copy">

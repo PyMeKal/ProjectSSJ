@@ -2,6 +2,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 import db from "./models/index.js";
+import { createAppRoutesRouter } from "./routes/appRoutes.js";
 import { createStatsRouter } from "./routes/statsRoutes.js";
 
 dotenv.config();
@@ -21,11 +22,12 @@ app.get("/api/health", (req, res) => {
   res.json({ ok: true, service: "ProjectSSJ API" });
 });
 
+app.use("/api/app-routes", createAppRoutesRouter());
 app.use("/api/stats", createStatsRouter(db));
 
 app.use((error, req, res, next) => {
   console.error(error);
-  res.status(500).json({ error: "서버에서 오류가 발생했습니다." });
+  res.status(error.status ?? 500).json({ error: error.message ?? "서버에서 오류가 발생했습니다." });
 });
 
 try {

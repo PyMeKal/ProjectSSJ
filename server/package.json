@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "node --watch src/index.js",
     "start": "node src/index.js",
-    "import": "node src/jobs/importChatFile.js"
+    "import": "node src/jobs/importChatFile.js",
+    "reset:db": "node src/jobs/resetDatabase.js"
   },
   "dependencies": {
     "cors": "^2.8.5",

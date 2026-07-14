@@ -8,7 +8,8 @@
   ],
   "scripts": {
     "dev": "concurrently -n server,client -c cyan,green \"npm run dev --workspace @project-ssj/server\" \"npm run dev --workspace @project-ssj/client\"",
-    "import": "npm run import --workspace @project-ssj/server -- ./inputs/KakaoTalkChats.txt"
+    "import": "npm run import --workspace @project-ssj/server -- ./inputs/KakaoTalkChats.txt",
+    "reset:db": "npm run reset:db --workspace @project-ssj/server"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

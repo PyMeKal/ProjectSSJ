@@ -1,4 +1,12 @@
-export function ParticipantBars({ rows, valueLabel, suffix }) {
+export function ParticipantBars({ rows, valueLabel, suffix, emptyMessage = "표시할 결과가 없습니다." }) {
+  if (rows.length === 0) {
+    return (
+      <section className="participant-bars empty-state" aria-label="참가자별 막대그래프">
+        {emptyMessage}
+      </section>
+    );
+  }
+
   const maxValue = Math.max(...rows.map((row) => row[valueLabel]), 1);
 
   return (
