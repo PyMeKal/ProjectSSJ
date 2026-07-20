@@ -1,14 +1,12 @@
-export function StatCard({ icon: Icon, label, value, caption }) {
+export function StatCard({ icon: Icon, label, value, caption, positive }) {
   return (
     <article className="stat-card">
-      <div className="stat-icon">
-        <Icon size={20} />
+      <div className="stat-heading">
+        <span>{label}</span>
+        <span className="stat-icon"><Icon size={18} /></span>
       </div>
-      <div>
-        <p>{label}</p>
-        <strong>{value}</strong>
-        {caption ? <span>{caption}</span> : null}
-      </div>
+      <strong>{value}</strong>
+      {caption ? <p><b className={positive ? "positive" : ""}>{positive}</b>{positive ? " " : ""}{caption}</p> : null}
     </article>
   );
 }

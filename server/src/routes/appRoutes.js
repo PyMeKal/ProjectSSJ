@@ -5,6 +5,9 @@ export const appRoutes = {
   analysis: "/analysis",
   time: "/analysis/time",
   keyword: "/analysis/keyword",
+  users: "/analysis/users",
+  login: "/login",
+  user: "/user",
 };
 
 export function createAppRoutesRouter() {
